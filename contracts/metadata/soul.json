@@ -1,0 +1,10 @@
+{
+    "name": "Soul Stone",
+    "description": "The Soul Stone, found on Vormir, can control life and death, but demands a sacrifice.",
+    "attributes": [
+        {
+            "trait_type": "Color",
+            "value": "Orange"
+        }
+    ]
+}

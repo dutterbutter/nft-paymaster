@@ -1,0 +1,10 @@
+{
+    "name": "Reality Stone",
+    "description": "The Reality Stone, also known as the Aether, can transform reality as we know it.",
+    "attributes": [
+        {
+            "trait_type": "Color",
+            "value": "Red"
+        }
+    ]
+}

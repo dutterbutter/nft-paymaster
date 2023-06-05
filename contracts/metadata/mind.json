@@ -1,0 +1,10 @@
+{
+    "name": "Mind Stone",
+    "description": "The Mind Stone, embedded in the Vision's forehead, allows the user to control the minds of others.",
+    "attributes": [
+        {
+            "trait_type": "Color",
+            "value": "Yellow"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Time Stone",
+    "description": "The Time Stone, stored in the Eye of Agamotto, gives the user control over the past, present, and future.",
+    "attributes": [
+        {
+            "trait_type": "Color",
+            "value": "Green"
+        }
+    ]
+}
