@@ -4,24 +4,28 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
 // load wallet private key from env file
-const INFINITY_COLLECTION_ADDRESS = "";
+const INFINITY_COLLECTION_ADDRESS = "0x7CDBF2F07F4204Be589888bD480f3761AAE00061";
+const PAYMASTER = "0x90409ccb313dFF7F98B595A65DEa16be4AC25c8D";
+const GREETER = "0x9Ac98F32551B089aC8cDBE3113c02C47aee91dA3";
+
+// load env file
+import dotenv from "dotenv";
+dotenv.config();
+
+// load wallet private key from env file
+const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 export default async function (hre: HardhatRuntimeEnvironment) {
   const provider = new Provider("https://testnet.era.zksync.dev");
 
   // The wallet that will deploy the token and the paymaster
   // It is assumed that this wallet already has sufficient funds on zkSync
-  const wallet = new Wallet("<PRIVATE-KEY>");
-
-  // The wallet that will receive ERC20 tokens
-  const emptyWallet = Wallet.createRandom();
-  console.log(`Empty wallet's address: ${emptyWallet.address}`);
-  console.log(`Empty wallet's private key: ${emptyWallet.privateKey}`);
+  const wallet = new Wallet(PRIVATE_KEY);
 
   const deployer = new Deployer(hre, wallet);
 
   // Deploying the paymaster
-  const paymasterArtifact = await deployer.loadArtifact("Paymaster");
+  const paymasterArtifact = await deployer.loadArtifact("StarkIndustries");
   const paymaster = await deployer.deploy(paymasterArtifact, [INFINITY_COLLECTION_ADDRESS]);
   console.log(`Paymaster address: ${paymaster.address}`);
 
@@ -35,14 +39,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   ).wait();
 
   let paymasterBalance = await provider.getBalance(paymaster.address);
-
   console.log(`Paymaster ETH balance is now ${paymasterBalance.toString()}`);
 
-  // Supplying the ERC20 tokens to the empty wallet:
-  await // We will give the empty wallet 3 units of the token:
-  (await erc20.mint(emptyWallet.address, 3)).wait();
-
-  console.log("Minted 3 tokens for the empty wallet");
 
   console.log(`Done!`);
 }

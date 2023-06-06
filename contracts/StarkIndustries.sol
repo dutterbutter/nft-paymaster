@@ -13,7 +13,8 @@ import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 contract StarkIndustries is IPaymaster {
     uint256 constant PRICE_FOR_PAYING_FEES = 1;
 
-    address[] public allowedTokens;
+    mapping(address => bool) public allowedTokens;
+    IERC721 private immutable infinityStones;
 
     modifier onlyBootloader() {
         require(
@@ -24,10 +25,12 @@ contract StarkIndustries is IPaymaster {
         _;
     }
 
-    constructor(address[] memory _erc20s, address _infinityStones) {
-        for (uint256 i = 0; i < _erc20s.length; i++) {
-            allowedTokens[_erc20s[i]] = true;
-        }
+    constructor(address _infinityStones) {
+        // Allow DAI and USDC by default
+        // TODO: Update to allow constructor to accept an array of tokens
+        allowedTokens[0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b] = true; // DAI
+        allowedTokens[0x0faF6df7054946141266420b43783387A78d82A9] = true; // USDC
+
         infinityStones = IERC721(_infinityStones); // Initialize the InfinityStones NFT contract
     }
 
@@ -59,21 +62,15 @@ contract StarkIndustries is IPaymaster {
                 (address, uint256, bytes)
             );
 
-            // Verify if token is a supported token frok tokens list
-            bool isAllowedToken = false;
-            for (uint i = 0; i < allowedTokens.length; i++) {
-                if (token == allowedTokens[i]) {
-                    isAllowedToken = true;
-                    break;
-                }
-            }
+            // Verify if token is a supported token from tokens list
+            bool isAllowedToken = allowedTokens[token];
             require(isAllowedToken, "Invalid token");
 
             // We verify that the user has provided enough allowance
             address userAddress = address(uint160(_transaction.from));
 
-            // Verify if user has an Infinity Stone
-            require(infinityStones.balanceOf(userAddress) > 0, "User does not hold an Infinity Stone");
+            // Verify if user has an Infinity Stone in order to use paymaster
+            require(infinityStones.balanceOf(userAddress) > 0, "User does not hold an Infinity Stone and therefore cannot have Stark Industries pay for their transaction");
 
             address thisAddress = address(this);
 
