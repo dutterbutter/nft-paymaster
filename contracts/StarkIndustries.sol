@@ -25,13 +25,14 @@ contract StarkIndustries is IPaymaster {
         _;
     }
 
-    constructor(address _infinityStones) {
+    constructor(address _erc20) {
         // Allow DAI and USDC by default
-        // TODO: Update to allow constructor to accept an array of tokens
+        // TODO: make way better 
         allowedTokens[0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b] = true; // DAI
         allowedTokens[0x0faF6df7054946141266420b43783387A78d82A9] = true; // USDC
+        allowedTokens[address] = true; // passed in token
 
-        infinityStones = IERC721(_infinityStones); // Initialize the InfinityStones NFT contract
+        infinityStones = IERC721("0x7CDBF2F07F4204Be589888bD480f3761AAE00061"); // Initialize the InfinityStones NFT contract
     }
 
     function validateAndPayForPaymasterTransaction(

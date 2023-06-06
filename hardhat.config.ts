@@ -7,6 +7,10 @@ import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";
 import "@nomiclabs/hardhat-waffle";
 
+// load env file
+import dotenv from "dotenv";
+dotenv.config();
+
 // dynamically changes endpoints for local tests
 const zkSyncTestnet =
   process.env.NODE_ENV == "test"
@@ -37,6 +41,9 @@ const config: HardhatUserConfig = {
       },
     },
     zkSyncTestnet,
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   solidity: {
     version: "0.8.17",
