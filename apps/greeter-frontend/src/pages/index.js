@@ -28,6 +28,12 @@ const Home = () => {
 
         await provider.send("eth_requestAccounts", []);
 
+        const networkVersion = await provider.getNetwork().then((network) => network.chainId);
+        if (networkVersion !== 280) {
+          alert("Please switch to the zkSync Testnet to use this application.");
+          return;
+        }
+
         const signerInstance = provider.getSigner();
         setSigner(signerInstance);
 
@@ -73,6 +79,12 @@ const Home = () => {
     window.ethereum.on("accountsChanged", async (accounts) => {
       const provider = new Web3Provider(window.ethereum);
       setProvider(provider);
+
+      const networkVersion = await provider.getNetwork().then((network) => network.chainId);
+      if (networkVersion !== 280) {
+        alert("Please switch to the zkSync Testnet to use this application.");
+        return;
+      }
 
       const signerInstance = provider.getSigner();
       setSigner(signerInstance);
