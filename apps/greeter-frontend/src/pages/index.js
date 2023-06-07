@@ -146,9 +146,7 @@ const Home = () => {
     const paramsForFeeEstimation = utils.getPaymasterParams(
       PAYMASTER_CONTRACT_ADDRESS,
       {
-        type: "ApprovalBased",
-        minimalAllowance: ethers.BigNumber.from("1"),
-        token: ALLOWED_TOKEN,
+        type: "General",
         innerInput: new Uint8Array(),
       }
     );
@@ -163,13 +161,11 @@ const Home = () => {
         },
       }
     );
-    const fee = gasPrice.mul(gasLimit.toString());
+   // const fee = gasPrice.mul(gasLimit.toString());
     const paymasterParams = utils.getPaymasterParams(
       PAYMASTER_CONTRACT_ADDRESS,
       {
-        type: "ApprovalBased",
-        token: ALLOWED_TOKEN,
-        minimalAllowance: fee,
+        type: "General",
         // empty bytes as testnet paymaster does not use innerInput
         innerInput: new Uint8Array(),
       }

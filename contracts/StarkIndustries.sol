@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import {IPaymaster, ExecutionResult, PAYMASTER_VALIDATION_SUCCESS_MAGIC} from "@matterlabs/zksync-contracts/l2/system-contracts/interfaces/IPaymaster.sol";
@@ -11,9 +10,6 @@ import {TransactionHelper, Transaction} from "@matterlabs/zksync-contracts/l2/sy
 import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 
 contract StarkIndustries is IPaymaster {
-    uint256 constant PRICE_FOR_PAYING_FEES = 1;
-
-    mapping(address => bool) public allowedTokens;
     IERC721 private immutable infinityStones;
 
     modifier onlyBootloader() {
@@ -25,14 +21,8 @@ contract StarkIndustries is IPaymaster {
         _;
     }
 
-    constructor(address _erc20) {
-        // Allow DAI and USDC by default
-        // TODO: make way better 
-        allowedTokens[0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b] = true; // DAI
-        allowedTokens[0x0faF6df7054946141266420b43783387A78d82A9] = true; // USDC
-        allowedTokens[address] = true; // passed in token
-
-        infinityStones = IERC721("0x7CDBF2F07F4204Be589888bD480f3761AAE00061"); // Initialize the InfinityStones NFT contract
+    constructor(address _erc721) {
+        infinityStones = IERC721(_erc721); // Initialize the InfinityStones NFT contract
     }
 
     function validateAndPayForPaymasterTransaction(
@@ -55,64 +45,23 @@ contract StarkIndustries is IPaymaster {
         bytes4 paymasterInputSelector = bytes4(
             _transaction.paymasterInput[0:4]
         );
-        if (paymasterInputSelector == IPaymasterFlow.approvalBased.selector) {
-            // While the transaction data consists of address, uint256 and bytes data,
-            // the data is not needed for this paymaster
-            (address token, uint256 amount, bytes memory data) = abi.decode(
-                _transaction.paymasterInput[4:],
-                (address, uint256, bytes)
-            );
-
-            // Verify if token is a supported token from tokens list
-            bool isAllowedToken = allowedTokens[token];
-            require(isAllowedToken, "Invalid token");
-
-            // We verify that the user has provided enough allowance
+        
+        // change to use general paymaster flow
+        if (paymasterInputSelector == IPaymasterFlow.general.selector) {
             address userAddress = address(uint160(_transaction.from));
-
-            // Verify if user has an Infinity Stone in order to use paymaster
+              // Verify if user has an Infinity Stone in order to use paymaster
             require(infinityStones.balanceOf(userAddress) > 0, "User does not hold an Infinity Stone and therefore cannot have Stark Industries pay for their transaction");
-
-            address thisAddress = address(this);
-
-            uint256 providedAllowance = IERC20(token).allowance(
-                userAddress,
-                thisAddress
-            );
-            require(
-                providedAllowance >= PRICE_FOR_PAYING_FEES,
-                "Min allowance too low"
-            );
-
             // Note, that while the minimal amount of ETH needed is tx.gasPrice * tx.gasLimit,
             // neither paymaster nor account are allowed to access this context variable.
             uint256 requiredETH = _transaction.gasLimit *
                 _transaction.maxFeePerGas;
 
-            try
-                IERC20(token).transferFrom(userAddress, thisAddress, amount)
-            {} catch (bytes memory revertReason) {
-                // If the revert reason is empty or represented by just a function selector,
-                // we replace the error with a more user-friendly message
-                if (revertReason.length <= 4) {
-                    revert("Failed to transferFrom from users' account");
-                } else {
-                    assembly {
-                        revert(add(0x20, revertReason), mload(revertReason))
-                    }
-                }
-            }
-
             // The bootloader never returns any data, so it can safely be ignored here.
             (bool success, ) = payable(BOOTLOADER_FORMAL_ADDRESS).call{
                 value: requiredETH
             }("");
-            require(
-                success,
-                "Failed to transfer tx fee to the bootloader. Paymaster balance might not be enough."
-            );
         } else {
-            revert("Unsupported paymaster flow");
+            revert("Invalid paymaster flow");
         }
     }
 

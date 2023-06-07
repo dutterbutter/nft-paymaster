@@ -3,7 +3,7 @@ import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
-const DAI_TOKEN_ADDRESS="0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b";
+const INFINITY_STONE_ADDRESS="0x7CDBF2F07F4204Be589888bD480f3761AAE00061";
 
 // load env file
 import dotenv from "dotenv";
@@ -22,9 +22,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const deployer = new Deployer(hre, wallet);
 
   // Deploying the paymaster
-  
   const paymasterArtifact = await deployer.loadArtifact("StarkIndustries");
-  const paymaster = await deployer.deploy(paymasterArtifact, [DAI_TOKEN_ADDRESS]);
+  const paymaster = await deployer.deploy(paymasterArtifact, [INFINITY_STONE_ADDRESS]);
   console.log(`Paymaster address: ${paymaster.address}`);
 
   console.log("Funding paymaster with ETH");
@@ -38,7 +37,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   let paymasterBalance = await provider.getBalance(paymaster.address);
   console.log(`Paymaster ETH balance is now ${paymasterBalance.toString()}`);
-
 
   console.log(`Done!`);
 }
